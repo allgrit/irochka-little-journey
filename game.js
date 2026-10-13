@@ -2,12 +2,13 @@
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');
 const route=STOPS,keys={left:false,right:false,jump:false};
 let index=0,mode='intro',time=0,last=0,frame=0,player,platforms=[],ground=null,items=[],dogs=[],particles=[],visited={},score={},assist=false,falls=0,boatWave=0,ride=0,bridgeSteps=new Set(),goalNudge=false;
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const heldPointers={left:new Set(),right:new Set(),jump:new Set()};
+function clearInput(){keys.left=keys.right=keys.jump=false;for(const key of Object.keys(heldPointers)){heldPointers[key].clear();$(key).classList.remove('held')}}
 try{const s=JSON.parse(localStorage.getItem('irochka-short-journey-v1'));if(s&&Number.isInteger(s.index)){index=Math.max(0,Math.min(s.index,5));visited=s.visited||{};score=s.score||{};if(index)$('start').textContent='Continue our little journey →'}}catch{}
 function save(){try{localStorage.setItem('irochka-short-journey-v1',JSON.stringify({index,visited,score}))}catch{}}
 function message(s){$('hint').textContent=s}
 function platform(x,y,w,type='solid',extra={}){return {x,y,w,type,bx:x,by:y,dx:0,dy:0,crack:0,hidden:0,...extra}}
-function setup(){mode='gate';keys.left=keys.right=keys.jump=false;window.ticketGate(index,setupUnlocked)}
+function setup(){mode='gate';clearInput();window.ticketGate(index,setupUnlocked)}
 function setupUnlocked(){
  time=0;assist=false;falls=0;boatWave=0;ride=0;bridgeSteps=new Set();goalNudge=false;ground=null;particles=[];dogs=[];player={x:42,y:420,vx:0,vy:0,jumps:0,face:1};
  items=[{x:350,y:323,taken:false}];
@@ -25,16 +26,16 @@ function hud(){const n=index===5?dogs.filter(d=>d.caught).length:items.filter(i=
 function renderRoute(){$('route').innerHTML=route.map((s,i)=>`<li class="${visited[i]?'done':''} ${i===index?'current':''}">${visited[i]?'✓ ':''}${s.name}</li>`).join('')}
 $('start').onclick=()=>{setup();last=0;cancelAnimationFrame(frame);frame=requestAnimationFrame(tick)};
 function jump(){if(mode!=='play')return;if(index===4){if(player.y>=404)player.vy=-340;return}if(player.jumps>=2)return;player.vy=player.jumps===0?-510:-460;player.jumps++;ground=null;burst(player.x,player.y,5)}
-function bindHold(id,key){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;b.setPointerCapture(e.pointerId);if(key==='jump')jump()});for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>keys[key]=false)}
+function bindHold(id,key){const b=$(id),held=heldPointers[key];b.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='play')return;held.add(e.pointerId);keys[key]=true;b.classList.add('held');b.setPointerCapture(e.pointerId);if(key==='jump')jump()});for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,e=>{held.delete(e.pointerId);keys[key]=held.size>0;b.classList.toggle('held',keys[key])})}
 bindHold('left','left');bindHold('right','right');bindHold('jump','jump');
 window.addEventListener('keydown',e=>{if($('play').hidden)return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD','KeyW','KeyP','Escape'].includes(e.code))e.preventDefault();if(['ArrowLeft','KeyA'].includes(e.code))keys.left=true;if(['ArrowRight','KeyD'].includes(e.code))keys.right=true;if(['ArrowUp','Space','KeyW'].includes(e.code)){keys.jump=true;if(!e.repeat)jump()}if(!e.repeat&&['KeyP','Escape'].includes(e.code))pause()});
 window.addEventListener('keyup',e=>{if(['ArrowLeft','KeyA'].includes(e.code))keys.left=false;if(['ArrowRight','KeyD'].includes(e.code))keys.right=false;if(['ArrowUp','Space','KeyW'].includes(e.code))keys.jump=false});
-function pause(){if(mode==='play'){mode='paused';keys.left=keys.right=keys.jump=false;$('pause').textContent='Resume'}else if(mode==='paused'){mode='play';$('pause').textContent='Pause'}}
-$('pause').onclick=pause;window.addEventListener('blur',()=>{keys.left=keys.right=keys.jump=false;if(mode==='play')pause()});
+function pause(){if(mode==='play'){mode='paused';clearInput();$('pause').textContent='Resume'}else if(mode==='paused'){mode='play';$('pause').textContent='Pause'}}
+$('pause').onclick=pause;function suspend(){clearInput();if(mode==='play')pause()}window.addEventListener('blur',suspend);window.addEventListener('pagehide',suspend);document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend()});
 $('gentle').onclick=()=>{if(mode!=='play')return;assist=true;items.forEach(i=>i.taken=true);dogs.forEach(d=>d.caught=true);hud();message('I have packed the keepsake and made you a little path. Come to the right, love.');if(index===4)complete()};
 function burst(x,y,n){for(let i=0;i<n;i++)particles.push({x,y,vx:Math.cos(i*2.4)*55,vy:-35-Math.sin(i*2.4)*50,life:.6})}
 function reset(){falls++;player={x:42,y:420,vx:0,vy:0,jumps:0,face:1};ground=null;platforms.forEach(p=>{p.hidden=0;p.crack=0});message(falls>1?'I can make you a little path. Tap “Sasha, give me a hand”.':'Caught you. Your keepsake is safe. Another little try? ♡')}
-function complete(){if(mode!=='play')return;mode='landed';visited[index]=true;score[index]=true;save();keys.left=keys.right=keys.jump=false;$('controls').hidden=true;$('landed').hidden=false;$('memory').textContent=route[index].memory;$('next').textContent=index===5?'Open your welcome-home letter ♡':'Pack this memory. Next stop →';renderRoute();$('next').focus({preventScroll:true});burst(player.x,player.y-35,16)}
+function complete(){if(mode!=='play')return;mode='landed';visited[index]=true;score[index]=true;save();clearInput();$('controls').hidden=true;$('landed').hidden=false;$('memory').textContent=route[index].memory;$('next').textContent=index===5?'Open your welcome-home letter ♡':'Pack this memory. Next stop →';renderRoute();$('next').focus({preventScroll:true});burst(player.x,player.y-35,16)}
 $('next').onclick=()=>{if(index===5){finish();return}index++;save();setup()};
 function finish(){mode='finished';$('play').hidden=true;$('finish').hidden=false;$('memory-book').innerHTML=route.map(s=>`<article class="memory-card"><span>${s.date} · ♥ SAFELY PACKED</span><h3>${s.name}</h3><p>${s.memory}</p></article>`).join('');window.scrollTo(0,0)}
 $('replay').onclick=()=>{index=0;score={};visited={};save();$('finish').hidden=true;$('intro').hidden=false;$('start').textContent='One more little journey →';mode='intro'};

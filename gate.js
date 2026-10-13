@@ -24,7 +24,7 @@ window.ticketGate=(stage,done)=>{
 el('unlock-form').addEventListener('submit',event=>{
  event.preventDefault();const raw=el('secret-code').value.normalize('NFKC').replace(/\s/g,'').toUpperCase();
  const code=current===1&&/^\d+$/.test(raw)?String(Number(raw)):raw;
- if(code===puzzles[current].code){solved.add(current);try{localStorage.setItem('irochka-puzzles-v1',JSON.stringify([...solved]))}catch{}el('lock').hidden=true;after()}
+ if(code===puzzles[current].code){solved.add(current);try{localStorage.setItem('irochka-puzzles-v1',JSON.stringify([...solved]))}catch{}el('secret-code').blur();el('lock').hidden=true;after()}
  else{el('lock-feedback').textContent='Not quite yet. Try again, or ask me for a tiny hint. ♡';el('secret-code').focus()}
 });
 el('code-hint').onclick=()=>el('hint-copy').hidden=false;el('lost-ticket').onclick=()=>el('paper-copy').hidden=false;
