@@ -9,7 +9,8 @@ let theme='roof';
 try{const s=JSON.parse(localStorage.getItem('irochka-platformer-v2'));if(s&&Number.isInteger(s.index)){index=Math.max(0,Math.min(s.index,route.length-1));visited=s.visited||{};score=s.score||{};if(index)$('start').textContent='Continue the adventure →'}}catch{}
 function save(){try{localStorage.setItem('irochka-platformer-v2',JSON.stringify({index,visited,score}))}catch{}}
 function message(s){$('hint').textContent=s;toast=4}
-function setup(){theme=themes[route[index].landmark]||'roof';time=0;camera=0;assist=false;ground=null;particles=[];toast=0;
+function setup(){window.ticketGate(index,setupUnlocked)}
+function setupUnlocked(){theme=themes[route[index].landmark]||'roof';time=0;camera=0;assist=false;ground=null;particles=[];toast=0;
  const ys=[470,416,350,408,330,394,470],xs=[0,190,365,540,715,900,1080];
  platforms=xs.map((x,i)=>({x,baseX:x,y:ys[i],baseY:ys[i],w:i===0?155:i===6?240:126,type:i===0||i===6?'solid':theme==='boat'&&i%2?'boat':theme==='lift'&&i%2?'lift':theme==='bounce'&&i===2?'bounce':theme==='crumble'&&i%2?'crumble':'solid',crack:0,hidden:0,dx:0,dy:0}));
  hearts=[1,3,5].map(i=>({platform:i,taken:false}));secret={x:778,y:173,taken:false};checkpoint={x:70,y:470};player={x:70,y:470,vx:0,vy:0,jumps:0,face:1};mode='play';keys.left=keys.right=false;
