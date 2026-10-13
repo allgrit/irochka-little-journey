@@ -38,7 +38,8 @@ function reset(){falls++;player={x:42,y:420,vx:0,vy:0,jumps:0,face:1};ground=nul
 function complete(){if(mode!=='play')return;mode='landed';visited[index]=true;score[index]=true;save();clearInput();$('controls').hidden=true;$('landed').hidden=false;$('memory').textContent=route[index].memory;$('next').textContent=index===5?'Open your welcome-home letter ♡':'Pack this memory. Next stop →';renderRoute();$('next').focus({preventScroll:true});burst(player.x,player.y-35,16)}
 $('next').onclick=()=>{if(index===5){finish();return}index++;save();setup()};
 function finish(){mode='finished';$('play').hidden=true;$('finish').hidden=false;$('memory-book').innerHTML=route.map(s=>`<article class="memory-card"><span>${s.date} · ♥ SAFELY PACKED</span><h3>${s.name}</h3><p>${s.memory}</p></article>`).join('');window.scrollTo(0,0)}
-$('replay').onclick=()=>{index=0;score={};visited={};save();$('finish').hidden=true;$('intro').hidden=false;$('start').textContent='One more little journey →';mode='intro'};
+function restartWithRiddles(){index=0;score={};visited={};clearInput();save();$('finish').hidden=true;$('intro').hidden=true;$('play').hidden=true;$('start').textContent='Let’s take the scenic way home →';mode='gate';window.resetTicketPuzzles()}
+$('replay').onclick=restartWithRiddles;$('restart-riddles').onclick=restartWithRiddles;
 function update(dt){
  time+=dt;particles=particles.filter(p=>p.life>0);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}
  if(index===4){updateGondola(dt);return}

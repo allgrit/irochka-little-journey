@@ -27,6 +27,7 @@ el('unlock-form').addEventListener('submit',event=>{
  if(code===puzzles[current].code){solved.add(current);try{localStorage.setItem('irochka-puzzles-v1',JSON.stringify([...solved]))}catch{}el('secret-code').blur();el('lock').hidden=true;after()}
  else{el('lock-feedback').textContent='Not quite yet. Try again, or ask me for a tiny hint. ♡';el('secret-code').focus()}
 });
+window.resetTicketPuzzles=()=>{solved.clear();try{localStorage.setItem('irochka-puzzles-v1','[]')}catch{}show(0,()=>{el('lock').hidden=true;el('intro').hidden=false})};
 el('code-hint').onclick=()=>el('hint-copy').hidden=false;el('lost-ticket').onclick=()=>el('paper-copy').hidden=false;
 show(0,()=>{el('lock').hidden=true;el('intro').hidden=false});
 })();
