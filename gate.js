@@ -3,7 +3,7 @@ const el=id=>document.getElementById(id);
 const puzzles=[
  {code:'LOVE',title:'Almost home, Irochka.',label:'01 / THE LETTER',copy:'Four lines in your letter. Four first steps. One word.',hint:'Read the first letter of each of the four lines, from top to bottom.',paper:'Look how far your little feet have been.\nOne more adventure waits beyond this gate.\nVery soon, I’ll hold you close again.\nEvery road feels warmer with you.'},
  {code:'12',title:'Paw inspection!',label:'02 / THE WELCOME CREW',copy:'Our two fluffy inspectors left prints all over your ticket. How many pawprints can you find?',hint:'Count every pawprint on the whole open sheet, including the two large stamps under our portraits. Noses and stars do not count.',paper:'There are ten small pawprints scattered over the sheet and two large paw stamps underneath our portraits.'},
- {code:'HOME',title:'One last little clue.',label:'03 / OUR DESTINATION',copy:'Find the honey jar on your ticket. Take away a few letters, then add a little “me”. Where are we going?',hint:'HONEY minus NEY leaves HO. Now add ME.',paper:'HONEY − NEY + ME = _ _ _ _'}
+ {code:'HOME',title:'One last little clue.',label:'03 / OUR DESTINATION',copy:'Find the honey jar on your ticket. Take away a few letters, then add a little “me”. Where are we going?',hint:'Name the picture in English: HONEY. The three marks after it mean remove the last three letters. Then add ME.',paper:'A jar of honey, followed by three apostrophes, then + ME.'}
 ];
 let current=0,after=()=>{el('intro').hidden=false;el('start').focus({preventScroll:true})};
 const solved=new Set();
@@ -18,7 +18,7 @@ function show(n,done){
  el('lock-feedback').textContent='Take your time, love. Your journey is saved.';window.scrollTo(0,0);
 }
 window.ticketGate=(stage,done)=>{
- const required=stage>=12?[0,1,2]:stage>=6?[0,1]:[0];
+ const required=stage>=5?[0,1,2]:stage>=2?[0,1]:[0];
  const next=required.find(n=>!solved.has(n));if(next===undefined){done();return}show(next,()=>window.ticketGate(stage,done));
 };
 el('unlock-form').addEventListener('submit',event=>{
